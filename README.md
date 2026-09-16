@@ -5,7 +5,7 @@
 
 ## 技术栈
 
-Java 21 · Spring Boot 3.5.16 · Maven · MyBatis-Plus 3.5.17 · H2 2.5.250（文件模式）· 单页 HTML（无框架）
+Java 21 · Spring Boot 3.5.16 · Maven · MyBatis-Plus 3.5.17 · H2 2.3.232（文件模式，Spring Boot 托管版本）· 单页 HTML（无框架）
 
 ## 数据与文件位置（全部在库外，可整体删除）
 
@@ -82,3 +82,8 @@ node tools/smoke-test.mjs
 ## 刻意不做
 
 预览、逻辑删除、权限/多用户、去重、Flyway 迁移、对象存储 —— 属 M1 或后续，原型不引入。
+
+## 两个已知事项（原型期结论）
+
+- **H2 不追最新**：曾用 2.5.250，强杀 JVM 后其 MVStore 出现 `flush` panic，已提交记录不再落盘；回退到 Spring Boot 托管的 2.3.232 后，同样的强杀重启流程数据完好。
+- **停止服务尽量用 Ctrl+C**：直接强杀进程虽然已验证不丢数据，但让 Spring 正常关闭更稳妥。

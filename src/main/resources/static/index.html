@@ -349,7 +349,7 @@ async function openDetail(id) {
 }
 
 async function removeItem(id, name) {
-  if (!confirm('删除「' + name + '」？\n记录与磁盘文件会一起删除，且不可恢复。')) return;
+  if (!confirm('删除「' + name + '」？\n\n只删除系统内的记录与副本（E:/AgentWork/CangShu/cangshu-data/files），你上传前位置的原文件不受影响。\n删除后不可恢复（原型没有回收站）。')) return;
   try {
     await api('/api/resources/' + id, { method: 'DELETE' });
     toast('已删除：' + name);
