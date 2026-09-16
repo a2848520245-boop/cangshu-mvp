@@ -75,7 +75,12 @@
   tbody tr:hover{background:rgba(250,244,232,.6)}
   td.num{text-align:right;white-space:nowrap}
   td.ops{text-align:right;white-space:nowrap}
-  td.name{font-weight:500;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  td.name{font-weight:500;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* 操作列固定在工作区右侧：横向滚动时「删除」不再被裁切（sticky 需不透明底色 + 左侧分隔阴影，避免压到其它列时露馅） */
+  thead th.ops,tbody td.ops{position:sticky;right:0;z-index:2;box-shadow:-1px 0 0 var(--line),-14px 0 16px -14px rgba(66,45,20,.45)}
+  thead th.ops{background:#f8f3e9}
+  tbody td.ops{background:var(--card)}
+  tbody tr:hover td.ops{background:#fcf8ee}
   .hash{font-family:"JetBrains Mono","Cascadia Mono",Consolas,monospace;font-size:12px;color:var(--ink-soft);cursor:copy}
   .empty{padding:34px 12px;text-align:center;color:var(--ink-soft);font-size:13px}
   .btn{
