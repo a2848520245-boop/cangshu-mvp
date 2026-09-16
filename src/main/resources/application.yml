@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: cangshu-mvp
+  datasource:
+    # H2 文件模式：数据落在 E 盘库外目录，可随 cangshu-data 整体清理
+    url: jdbc:h2:file:E:/AgentWork/CangShu/cangshu-data/db/cangshu;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  sql:
+    init:
+      mode: always
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 210MB
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+
+cangshu:
+  storage:
+    # 上传文件根目录（库外，绝对路径，便于随时清理）
+    root: E:/AgentWork/CangShu/cangshu-data/files
+
+logging:
+  level:
+    com.cangshu.mvp: INFO

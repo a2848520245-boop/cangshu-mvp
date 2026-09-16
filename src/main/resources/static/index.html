@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>仓鼠 · MVP 原型</title>
+<style>
+  :root{
+    --paper:#f4eee1;
+    --card:#fffdf7;
+    --ink:#241f19;
+    --ink-soft:#6f6455;
+    --line:#e2d7c3;
+    --line-strong:#cfc0a4;
+    --accent:#b23a2e;
+    --accent-dark:#8c2a20;
+    --accent-soft:#f7e8e4;
+    --ok:#2f6b46;
+    --shadow:0 20px 44px -30px rgba(66,45,20,.6);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;min-height:100vh;color:var(--ink);
+    font-family:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    background:
+      radial-gradient(820px 420px at 12% -10%, #fffaf0 0%, rgba(255,250,240,0) 68%),
+      radial-gradient(720px 400px at 94% 2%, #eee0c8 0%, rgba(238,224,200,0) 62%),
+      repeating-linear-gradient(0deg, rgba(122,98,64,.03) 0 1px, rgba(0,0,0,0) 1px 4px),
+      var(--paper);
+  }
+  .mono{font-family:"JetBrains Mono","Cascadia Mono",Consolas,monospace}
+  .wrap{max-width:1040px;margin:0 auto;padding:44px 22px 80px}
+  .hero{display:flex;align-items:center;gap:18px;margin-bottom:30px}
+  .seal{
+    width:56px;height:56px;flex:0 0 56px;border-radius:14px;display:grid;place-items:center;
+    background:linear-gradient(160deg,var(--accent) 0%,var(--accent-dark) 100%);
+    color:#fff5ef;font-size:26px;font-weight:700;letter-spacing:1px;
+    box-shadow:var(--shadow);
+  }
+  .hero h1{margin:0 0 6px;font-size:24px;letter-spacing:.5px}
+  .hero p{margin:0;color:var(--ink-soft);font-size:13.5px;line-height:1.6;max-width:640px}
+  .hero-meta{margin-left:auto;font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:7px;white-space:nowrap}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(47,107,70,.15)}
+  .panel{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:22px 22px 18px;margin-bottom:22px;box-shadow:var(--shadow);
+  }
+  .panel-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+  .panel-head h2{margin:0;font-size:16px;letter-spacing:.6px}
+  .hint{font-size:12px;color:var(--ink-soft)}
+  .dropzone{
+    border:1.5px dashed var(--line-strong);border-radius:14px;padding:26px 20px;text-align:center;
+    background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(250,244,232,.45));
+    cursor:pointer;transition:border-color .18s,background .18s,transform .18s;outline:none;
+  }
+  .dropzone:hover,.dropzone:focus-visible{border-color:var(--accent);background:var(--accent-soft)}
+  .dropzone.drag{border-color:var(--accent);background:var(--accent-soft);transform:translateY(-1px)}
+  .drop-main strong{display:block;font-size:15px;margin-bottom:6px}
+  .drop-main span{font-size:12.5px;color:var(--ink-soft)}
+  .progress{margin-top:16px;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+  .progress .bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),#d97b52);transition:width .15s}
+  .drop-file{margin-top:14px;font-size:12.5px;color:var(--ink-soft)}
+  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:760px}
+  thead th{
+    text-align:left;padding:11px 12px;background:rgba(246,240,228,.75);color:var(--ink-soft);
+    font-size:11.5px;font-weight:600;letter-spacing:1.1px;border-bottom:1px solid var(--line);white-space:nowrap;
+  }
+  thead th.num{text-align:right}
+  thead th.ops{text-align:right}
+  tbody td{padding:12px;border-bottom:1px solid rgba(226,215,195,.7);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:rgba(250,244,232,.6)}
+  td.num{text-align:right;white-space:nowrap}
+  td.ops{text-align:right;white-space:nowrap}
+  td.name{font-weight:500;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hash{font-family:"JetBrains Mono","Cascadia Mono",Consolas,monospace;font-size:12px;color:var(--ink-soft);cursor:copy}
+  .empty{padding:34px 12px;text-align:center;color:var(--ink-soft);font-size:13px}
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;border-radius:9px;padding:7px 13px;font-size:13px;
+    border:1px solid var(--line-strong);background:#fff;color:var(--ink);cursor:pointer;
+    text-decoration:none;transition:background .15s,border-color .15s,color .15s;font-family:inherit;
+  }
+  .btn:hover{background:#fbf5ea}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn + .btn{margin-left:6px}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff7f3}
+  .btn-primary:hover{background:var(--accent-dark);border-color:var(--accent-dark)}
+  .btn-danger{color:var(--accent);border-color:#e6c2bb;background:#fff}
+  .btn-danger:hover{background:var(--accent-soft)}
+  .btn-sm{padding:5px 10px;font-size:12.5px}
+  .pager{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;font-size:12.5px;color:var(--ink-soft)}
+  .foot{margin-top:26px;text-align:center;font-size:12px;color:var(--ink-soft);line-height:1.8}
+  .overlay{
+    position:fixed;inset:0;background:rgba(36,31,25,.42);backdrop-filter:blur(3px);
+    display:grid;place-items:center;padding:22px;z-index:40;
+  }
+  .modal{
+    position:relative;width:min(600px,100%);max-height:86vh;overflow:auto;background:var(--card);
+    border:1px solid var(--line);border-radius:18px;padding:26px 26px 20px;box-shadow:0 30px 70px -30px rgba(40,26,10,.65);
+  }
+  .modal h3{margin:0 0 18px;font-size:17px}
+  .modal-close{
+    position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);
+    background:#fff;color:var(--ink-soft);font-size:17px;line-height:1;cursor:pointer;
+  }
+  .modal-close:hover{background:#fbf5ea}
+  #modalBody{margin:0 0 20px}
+  .dl-row{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:9px 0;border-bottom:1px dashed rgba(226,215,195,.9)}
+  .dl-row:last-child{border-bottom:none}
+  .dl-row dt{color:var(--ink-soft);font-size:12.5px;padding-top:1px}
+  .dl-row dd{margin:0;font-size:13.5px;word-break:break-all}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end}
+  .toasts{position:fixed;right:22px;bottom:22px;display:flex;flex-direction:column;gap:10px;z-index:60}
+  .toast{
+    background:#241f19;color:#f7f1e6;border-radius:11px;padding:11px 15px;font-size:13px;max-width:340px;
+    box-shadow:0 16px 34px -18px rgba(0,0,0,.7);animation:in .18s ease-out;line-height:1.5;
+  }
+  .toast.err{background:var(--accent-dark)}
+  .toast.out{opacity:0;transform:translateY(6px);transition:opacity .25s,transform .25s}
+  @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @media (max-width:640px){
+    .hero{flex-wrap:wrap}
+    .hero-meta{margin-left:0;width:100%}
+    .wrap{padding:26px 14px 60px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="seal" aria-hidden="true">仓</span>
+    <div>
+      <h1>仓鼠 · MVP 原型</h1>
+      <p>上传一份文件，服务端流式落盘并计算 SHA-256；列表、详情、下载、删除都在这一页完成。数据目录在库外，随时可整体清理。</p>
+    </div>
+    <div class="hero-meta"><span class="dot"></span><span id="origin">本地服务</span></div>
+  </header>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>上传资源</h2>
+      <span class="hint">单文件 ≤ 200MB · 落盘 E:\AgentWork\CangShu\cangshu-data\files</span>
+    </div>
+    <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="选择或拖入文件">
+      <input id="fileInput" type="file" hidden />
+      <div class="drop-main">
+        <strong>把文件拖进来，或点击选择</strong>
+        <span>上传完成立即回显 SHA-256，下载后可本地复核</span>
+      </div>
+      <div class="progress" id="progress" hidden><div class="bar" id="progressBar"></div></div>
+      <div class="drop-file" id="dropFile" hidden></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>资源列表</h2>
+      <span class="hint" id="listMeta">加载中…</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>文件名</th><th>类型</th><th class="num">大小</th>
+            <th>SHA-256</th><th>上传时间</th><th class="ops">操作</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="pager">
+      <button class="btn btn-sm" id="prev" type="button">← 上一页</button>
+      <span id="pageInfo">—</span>
+      <button class="btn btn-sm" id="next" type="button">下一页 →</button>
+    </div>
+  </section>
+
+  <footer class="foot">
+    可丢弃演示原型 · 数据在库外 <span class="mono">E:\AgentWork\CangShu\cangshu-data</span>，可整体删除<br />
+    验收口径见 <span class="mono">docs/开发宪章.md</span>；接口说明见 <span class="mono">README.md</span>
+  </footer>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" id="modalClose" type="button" aria-label="关闭">×</button>
+    <h3 id="modalTitle">资源详情</h3>
+    <dl id="modalBody"></dl>
+    <div class="modal-actions">
+      <a class="btn btn-primary" id="modalDownload" href="#">下载</a>
+      <button class="btn btn-danger" id="modalDelete" type="button">删除</button>
+    </div>
+  </div>
+</div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+const state = { page: 1, size: 10, total: 0, current: null };
+const $ = (id) => document.getElementById(id);
+
+function esc(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[ch]);
+}
+
+function fmtSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  const units = ['KB', 'MB', 'GB', 'TB'];
+  let value = bytes / 1024;
+  let i = 0;
+  while (value >= 1024 && i < units.length - 1) { value /= 1024; i += 1; }
+  return value.toFixed(value >= 100 ? 0 : 1) + ' ' + units[i];
+}
+
+function fmtTime(iso) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return date.toLocaleString('zh-CN', { hour12: false });
+}
+
+function toast(message, kind) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (kind === 'error' ? ' err' : '');
+  el.textContent = message;
+  $('toasts').appendChild(el);
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 260); }, 3200);
+}
+
+async function api(path, options) {
+  const res = await fetch(path, options);
+  if (res.status === 204) return null;
+  const text = await res.text();
+  let data = null;
+  if (text) { try { data = JSON.parse(text); } catch (ignored) { data = null; } }
+  if (!res.ok) {
+    throw new Error(data && data.message ? data.message : '请求失败（HTTP ' + res.status + '）');
+  }
+  return data;
+}
+
+function copyText(text) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => toast('已复制 SHA-256'), () => toast('复制失败', 'error'));
+  } else {
+    toast('当前浏览器不支持复制', 'error');
+  }
+}
+
+async function loadList(page) {
+  state.page = Math.max(1, page || 1);
+  try {
+    const data = await api('/api/resources?page=' + state.page + '&size=' + state.size);
+    state.total = data.total;
+    const rows = $('rows');
+    if (!data.items.length) {
+      rows.innerHTML = '<tr><td class="empty" colspan="7">还没有任何资源，先上传一份试试。</td></tr>';
+    } else {
+      rows.innerHTML = data.items.map((item) => `
+        <tr>
+          <td class="mono">${item.id}</td>
+          <td class="name" title="${esc(item.originalName)}">${esc(item.originalName)}</td>
+          <td class="hint">${esc(item.contentType)}</td>
+          <td class="num">${fmtSize(item.sizeBytes)}</td>
+          <td><span class="hash" title="点击复制完整哈希" data-hash="${esc(item.sha256)}">${esc(item.sha256.slice(0, 12))}…</span></td>
+          <td class="hint">${esc(fmtTime(item.createdAt))}</td>
+          <td class="ops">
+            <button class="btn btn-sm" data-act="detail" data-id="${item.id}" type="button">详情</button>
+            <a class="btn btn-sm" href="/api/resources/${item.id}/content">下载</a>
+            <button class="btn btn-sm btn-danger" data-act="delete" data-id="${item.id}" data-name="${esc(item.originalName)}" type="button">删除</button>
+          </td>
+        </tr>`).join('');
+    }
+    const pages = Math.max(1, Math.ceil(data.total / state.size));
+    $('listMeta').textContent = '共 ' + data.total + ' 条 · 每页 ' + state.size + ' 条';
+    $('pageInfo').textContent = '第 ' + state.page + ' / ' + pages + ' 页';
+    $('prev').disabled = state.page <= 1;
+    $('next').disabled = state.page >= pages;
+  } catch (err) {
+    $('listMeta').textContent = '列表加载失败';
+    $('rows').innerHTML = '<tr><td class="empty" colspan="7">' + esc(err.message) + '</td></tr>';
+    toast(err.message, 'error');
+  }
+}
+
+function upload(file) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const form = new FormData();
+    form.append('file', file);
+    $('progress').hidden = false;
+    $('dropFile').hidden = false;
+    $('dropFile').textContent = '正在上传：' + file.name;
+    xhr.open('POST', '/api/resources');
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        $('progressBar').style.width = Math.round((event.loaded / event.total) * 100) + '%';
+      }
+    };
+    xhr.onload = () => {
+      let data = null;
+      try { data = JSON.parse(xhr.responseText); } catch (ignored) { data = null; }
+      if (xhr.status === 201) resolve(data);
+      else reject(new Error(data && data.message ? data.message : '上传失败（HTTP ' + xhr.status + '）'));
+    };
+    xhr.onerror = () => reject(new Error('网络错误，上传中断'));
+    xhr.send(form);
+  });
+}
+
+async function handleFile(file) {
+  if (!file) return;
+  try {
+    const item = await upload(file);
+    $('dropFile').textContent = '已上传：' + item.originalName + ' · ' + fmtSize(item.sizeBytes) +
+      ' · SHA-256 ' + item.sha256.slice(0, 12) + '…';
+    toast('上传成功：' + item.originalName);
+    await loadList(1);
+  } catch (err) {
+    $('dropFile').textContent = '上传失败：' + err.message;
+    toast(err.message, 'error');
+  } finally {
+    setTimeout(() => { $('progress').hidden = true; $('progressBar').style.width = '0'; }, 600);
+    $('fileInput').value = '';
+  }
+}
+
+async function openDetail(id) {
+  try {
+    const item = await api('/api/resources/' + id);
+    state.current = item;
+    $('modalTitle').textContent = '资源 #' + item.id;
+    $('modalBody').innerHTML = [
+      ['文件名', esc(item.originalName)],
+      ['类型', esc(item.contentType)],
+      ['大小', fmtSize(item.sizeBytes) + '（' + item.sizeBytes + ' 字节）'],
+      ['SHA-256', '<span class="hash" title="点击复制" data-hash="' + esc(item.sha256) + '">' + esc(item.sha256) + '</span>'],
+      ['上传时间', esc(fmtTime(item.createdAt)) + '（' + esc(item.createdAt) + '）'],
+      ['下载地址', '<span class="mono">/api/resources/' + item.id + '/content</span>']
+    ].map(([k, v]) => '<div class="dl-row"><dt>' + k + '</dt><dd>' + v + '</dd></div>').join('');
+    $('modalDownload').href = '/api/resources/' + item.id + '/content';
+    $('overlay').hidden = false;
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function removeItem(id, name) {
+  if (!confirm('删除「' + name + '」？\n记录与磁盘文件会一起删除，且不可恢复。')) return;
+  try {
+    await api('/api/resources/' + id, { method: 'DELETE' });
+    toast('已删除：' + name);
+    $('overlay').hidden = true;
+    await loadList(state.page);
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+$('origin').textContent = '本地服务 · ' + location.host;
+
+const dropzone = $('dropzone');
+dropzone.addEventListener('click', () => $('fileInput').click());
+dropzone.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); $('fileInput').click(); }
+});
+$('fileInput').addEventListener('change', (event) => handleFile(event.target.files[0]));
+['dragenter', 'dragover'].forEach((type) => dropzone.addEventListener(type, (event) => {
+  event.preventDefault(); dropzone.classList.add('drag');
+}));
+['dragleave', 'drop'].forEach((type) => dropzone.addEventListener(type, (event) => {
+  event.preventDefault(); dropzone.classList.remove('drag');
+}));
+dropzone.addEventListener('drop', (event) => {
+  const file = event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files[0] : null;
+  handleFile(file);
+});
+
+$('rows').addEventListener('click', (event) => {
+  const hash = event.target.closest('[data-hash]');
+  if (hash) { copyText(hash.dataset.hash); return; }
+  const button = event.target.closest('button[data-act]');
+  if (!button) return;
+  if (button.dataset.act === 'detail') openDetail(button.dataset.id);
+  if (button.dataset.act === 'delete') removeItem(button.dataset.id, button.dataset.name);
+});
+$('modalBody').addEventListener('click', (event) => {
+  const hash = event.target.closest('[data-hash]');
+  if (hash) copyText(hash.dataset.hash);
+});
+$('modalClose').addEventListener('click', () => { $('overlay').hidden = true; });
+$('overlay').addEventListener('click', (event) => { if (event.target === $('overlay')) $('overlay').hidden = true; });
+document.addEventListener('keydown', (event) => { if (event.key === 'Escape') $('overlay').hidden = true; });
+$('modalDelete').addEventListener('click', () => {
+  if (state.current) removeItem(state.current.id, state.current.originalName);
+});
+$('prev').addEventListener('click', () => loadList(state.page - 1));
+$('next').addEventListener('click', () => loadList(state.page + 1));
+
+loadList(1);
+</script>
+</body>
+</html>
