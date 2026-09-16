@@ -19,6 +19,8 @@
     --shadow:0 20px 44px -30px rgba(66,45,20,.6);
   }
   *{box-sizing:border-box}
+  /* hidden 属性必须能压过组件自身的 display（否则遮罩层会常驻挡点击） */
+  [hidden]{display:none !important}
   body{
     margin:0;min-height:100vh;color:var(--ink);
     font-family:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
