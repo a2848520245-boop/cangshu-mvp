@@ -5,8 +5,8 @@ spring:
   application:
     name: cangshu-mvp
   datasource:
-    # H2 文件模式：数据落在 E 盘库外目录，可随 cangshu-data 整体清理
-    url: jdbc:h2:file:E:/AgentWork/CangShu/cangshu-data/db/cangshu;DB_CLOSE_DELAY=-1
+    # H2 文件模式：默认落在启动目录下的 cangshu-data，可随该目录整体清理
+    url: jdbc:h2:file:${cangshu.data-dir}/db/cangshu;DB_CLOSE_DELAY=-1
     driver-class-name: org.h2.Driver
     username: sa
     password: ""
@@ -23,9 +23,11 @@ mybatis-plus:
     map-underscore-to-camel-case: true
 
 cangshu:
+  # 数据根目录：默认相对启动目录，可用环境变量 CANGSHU_DATA_DIR 覆盖（含仓外绝对路径）
+  data-dir: ${CANGSHU_DATA_DIR:./cangshu-data}
   storage:
-    # 上传文件根目录（库外，绝对路径，便于随时清理）
-    root: E:/AgentWork/CangShu/cangshu-data/files
+    # 上传文件根目录：随数据根目录一起迁移
+    root: ${cangshu.data-dir}/files
 
 logging:
   level:

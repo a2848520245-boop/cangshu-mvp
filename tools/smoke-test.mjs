@@ -4,13 +4,15 @@
  *   上传（中文名 + 二进制）→ 列表 → 详情 → 下载（SHA-256 一致）→ 删除（记录 + 物理文件）
  *
  * 用法：node tools/smoke-test.mjs [baseUrl]
- * 环境变量：CANGSHU_FILES_DIR  物理文件目录（默认 E:/AgentWork/CangShu/cangshu-data/files）
+ * 环境变量：CANGSHU_FILES_DIR  物理文件目录（默认按脚本位置推导 <仓库目录>/cangshu-data/files）
  */
 import { createHash } from 'node:crypto';
 import { readdir } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 
 const base = (process.argv[2] ?? 'http://127.0.0.1:8080').replace(/\/+$/, '');
-const filesDir = process.env.CANGSHU_FILES_DIR ?? 'E:/AgentWork/CangShu/cangshu-data/files';
+// 默认取仓库目录下的 cangshu-data/files；若应用改用 CANGSHU_DATA_DIR 把数据放别处，这里同步设 CANGSHU_FILES_DIR
+const filesDir = process.env.CANGSHU_FILES_DIR ?? fileURLToPath(new URL('../cangshu-data/files', import.meta.url));
 
 const results = [];
 function check(name, ok, detail = '') {

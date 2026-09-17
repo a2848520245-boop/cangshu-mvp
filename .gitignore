@@ -4,3 +4,6 @@ target/
 *.iml
 .vscode/
 .DS_Store
+
+# 本地数据目录（默认相对路径；可用 CANGSHU_DATA_DIR 指到仓外）
+cangshu-data/

@@ -147,7 +147,7 @@
   <section class="panel">
     <div class="panel-head">
       <h2>上传资源</h2>
-      <span class="hint">单文件 ≤ 200MB · 落盘 E:\AgentWork\CangShu\cangshu-data\files</span>
+      <span class="hint">单文件 ≤ 200MB · 落盘到服务端数据目录 cangshu-data/files</span>
     </div>
     <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="选择或拖入文件">
       <input id="fileInput" type="file" hidden />
@@ -184,7 +184,7 @@
   </section>
 
   <footer class="foot">
-    可丢弃演示原型 · 数据在库外 <span class="mono">E:\AgentWork\CangShu\cangshu-data</span>，可整体删除<br />
+    可丢弃演示原型 · 数据在 <span class="mono">cangshu-data</span> 目录（可在配置里改到仓外），可整体删除<br />
     验收口径见 <span class="mono">docs/开发宪章.md</span>；接口说明见 <span class="mono">README.md</span>
   </footer>
 </div>
@@ -354,7 +354,7 @@ async function openDetail(id) {
 }
 
 async function removeItem(id, name) {
-  if (!confirm('删除「' + name + '」？\n\n只删除系统内的记录与副本（E:/AgentWork/CangShu/cangshu-data/files），你上传前位置的原文件不受影响。\n删除后不可恢复（原型没有回收站）。')) return;
+  if (!confirm('删除「' + name + '」？\n\n只删除系统内的记录与副本（cangshu-data/files 下的那份），你上传前位置的原文件不受影响。\n删除后不可恢复（原型没有回收站）。')) return;
   try {
     await api('/api/resources/' + id, { method: 'DELETE' });
     toast('已删除：' + name);

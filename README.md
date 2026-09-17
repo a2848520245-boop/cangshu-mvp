@@ -1,24 +1,33 @@
 # 仓鼠 MVP 原型（cangshu-mvp）
 
 > 可丢弃演示原型：只验证「上传 → 元数据 → 列表/详情 → 下载 → 删除」最小闭环，**不作为 M1 基线**。
-> 决策依据：笔记库 `ADR-0001-项目启动与技术栈裁决.md`，并与 2026-09-11 导师技术选型会议原话对齐（Flyway 不引入、ORM 待定等）。
+> 决策依据：项目内部决策记录，与 2026-09-11 技术选型会议结论对齐（Flyway 不引入、ORM 待定、对象存储不引入等）。
 
 ## 技术栈
 
 Java 21 · Spring Boot 3.5.16 · Maven · MyBatis-Plus 3.5.17 · H2 2.3.232（文件模式，Spring Boot 托管版本）· 单页 HTML（无框架）
 
-## 数据与文件位置（全部在库外，可整体删除）
+## 数据与文件位置（默认在仓库目录下，可整体删除）
 
-| 内容 | 路径 |
+数据根目录由配置项 `cangshu.data-dir` 决定，默认 `./cangshu-data`（相对**启动进程时的工作目录**，按下面的命令即在仓库目录下）。下表路径均相对仓库目录：
+
+| 内容 | 默认路径 |
 | --- | --- |
-| 上传文件 | `E:\AgentWork\CangShu\cangshu-data\files\<32位随机名>` |
-| H2 数据库 | `E:\AgentWork\CangShu\cangshu-data\db\cangshu.mv.db` |
-| 清理 | 停掉进程后 `Remove-Item -Recurse -Force E:\AgentWork\CangShu\cangshu-data`（下次启动自动重建） |
+| 上传文件 | `<仓库目录>/cangshu-data/files/<32位随机名>` |
+| H2 数据库 | `<仓库目录>/cangshu-data/db/cangshu.mv.db` |
+| 清理 | 停掉进程后删除数据目录（在仓库根目录执行 `Remove-Item -Recurse -Force cangshu-data`），下次启动自动重建 |
+
+要把数据放到仓库之外（推荐长期演示，便于隔离与清理），设环境变量 `CANGSHU_DATA_DIR` 指向任意目录即可，无需改代码：
+
+```powershell
+$env:CANGSHU_DATA_DIR = "<你的数据目录>"
+```
 
 ## 本地运行
 
 ```powershell
-$env:JAVA_HOME = "E:\JDK\jdk-21\jdk-21.0.12.1+1"
+$env:JAVA_HOME = "<你的 JDK 21 路径>"   # 只要求 JDK 21，发行版不限
+# 若 PATH 上的 java 不是 21，下面的 java 命令请改用 "<你的 JDK 21 路径>\bin\java"
 
 # 打包（跳过测试；原型以冒烟脚本验收）
 mvn -DskipTests package
@@ -32,7 +41,7 @@ mvn spring-boot:run
 
 打开 <http://127.0.0.1:8080/>。
 
-## 接口（供导师查阅）
+## 接口
 
 JSON 字段 camelCase；时间为 ISO-8601 UTC；`sha256` 为小写十六进制，仅作完整性校验、**不作唯一键**。
 
