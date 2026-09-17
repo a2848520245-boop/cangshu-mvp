@@ -32,8 +32,16 @@ import sys
 import tempfile
 from pathlib import Path
 
-from playwright.sync_api import Error as PlaywrightError
-from playwright.sync_api import sync_playwright
+try:
+    from playwright.sync_api import Error as PlaywrightError
+    from playwright.sync_api import sync_playwright
+except ImportError as exc:  # 干净 clone 上最常见的失败：环境里没有 playwright
+    raise SystemExit(
+        "缺少 Playwright（" + str(exc) + "）。\n"
+        "请先安装：python -m pip install playwright\n"
+        "若要用 Playwright 自带浏览器：python -m playwright install chromium\n"
+        "前置条件详见本文件开头的说明与 README「验收脚本」一节。"
+    )
 
 DEFAULT_BASE = "http://127.0.0.1:8080"
 REPO_ROOT = Path(__file__).resolve().parent.parent
