@@ -79,14 +79,32 @@ JSON 字段 camelCase；时间为 ISO-8601 UTC；`sha256` 为小写十六进制�
 {"code": "NOT_FOUND", "message": "资源不存在：1"}
 ```
 
-## 验收冒烟（上传/列表/详情/下载哈希/删除物理文件）
+## 验收脚本（两套，都在应用启动后另开一个终端执行）
+
+### 接口冒烟：24 项
 
 ```powershell
 # 应用启动后另开一个终端
 node tools/smoke-test.mjs
 ```
 
-脚本逐步打印 PASS/FAIL，任何一步失败即退出码 1。验收口径见 `docs/开发宪章.md` 第 5 节。
+覆盖上传 → 列表 → 详情 → 下载（SHA-256 一致）→ 删除（记录 + 物理文件）→ 边界。脚本逐步打印 PASS/FAIL，任何一步失败即退出码 1。验收口径见 `docs/开发宪章.md` 第 5 节。
+
+### 页面交互端到端：12 项
+
+```powershell
+# 前置：Python 3.10+（验证环境 3.12）+ playwright
+python -m pip install playwright
+
+# 应用启动后另开一个终端执行
+python tools\ui-e2e.py
+```
+
+覆盖真实浏览器里的上传 → 列表 → 详情 → 下载 → 删除，含「删除确认框写明不动原文件」。最后打印「全部通过：12 项」，整页截图落在 `target/ui-artifacts/ui-after.png`。
+
+- 浏览器：默认按 **本机 Edge → 本机 Chrome → Playwright 自带 chromium** 顺序自动探测（自带 chromium 需先 `python -m playwright install chromium`）；要固定通道设 `$env:CANGSHU_BROWSER_CHANNEL = "msedge"`。
+- 换地址/端口：`python tools\ui-e2e.py http://127.0.0.1:9090`，或设 `$env:CANGSHU_BASE_URL`（默认 `http://127.0.0.1:8080`）。
+- 中间产物目录：默认 `<仓库目录>/target/ui-artifacts/`（`target/` 被忽略，不进仓库），可用 `$env:CANGSHU_E2E_ARTIFACTS_DIR` 改到别处。
 
 ## 刻意不做
 
